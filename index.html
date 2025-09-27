@@ -1,0 +1,773 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>関係詞 ビジュアルガイド Ver.2.0</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+    <style>
+        body {
+            font-family: 'Noto Sans JP', sans-serif;
+            font-size: 21px;
+        }
+        .font-times { 
+            font-family: 'Times New Roman', Times, serif; 
+        }
+        .flowchart-node {
+            border: 2px solid #3366FF;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+        .flowchart-arrow {
+            width: 2px;
+            height: 3rem;
+            margin: 0.5rem auto;
+        }
+        .flowchart-arrow::after {
+            content: '';
+            display: block;
+            margin: -0.75rem auto 0;
+            width: 0;
+            height: 0;
+            border-left: 8px solid transparent;
+            border-right: 8px solid transparent;
+            border-top: 12px solid #3366FF;
+        }
+        .highlight-person { background-color: rgba(255, 102, 51, 0.2); padding: 2px 4px; border-radius: 4px; }
+        .highlight-pronoun { background-color: rgba(51, 204, 153, 0.3); padding: 2px 4px; border-radius: 4px; font-weight: bold; }
+        .highlight-thing { background-color: rgba(51, 102, 255, 0.2); padding: 2px 4px; border-radius: 4px; }
+        .highlight-adverb { background-color: rgba(255, 199, 0, 0.3); padding: 2px 4px; border-radius: 4px; font-weight: bold; }
+        .main-grid > div {
+            border-width: 1px;
+        }
+        .main-grid > div:nth-child(4n+1) { border-left-width: 0; }
+        .main-grid > div:nth-child(1), .main-grid > div:nth-child(2), .main-grid > div:nth-child(3), .main-grid > div:nth-child(4) { border-top-width: 0; }
+        .main-grid > div:nth-child(4n) { border-right-width: 0; }
+        .main-grid > div:nth-child(9), .main-grid > div:nth-child(10), .main-grid > div:nth-child(11), .main-grid > div:nth-child(12) { border-bottom-width: 0; }
+        
+        .audio-controls {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-top: 8px;
+        }
+        .audio-btn {
+            background-color: #f0f0f0;
+            border: 1px solid #ddd;
+            border-radius: 50%;
+            width: 36px;
+            height: 36px;
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            color: #555;
+        }
+        .audio-btn:hover {
+            background-color: #e0e0e0;
+        }
+        .audio-btn:disabled {
+            cursor: not-allowed;
+            opacity: 0.5;
+        }
+        .audio-btn.recording {
+            background-color: #ff4136;
+            color: white;
+        }
+        .score-display {
+            font-weight: bold;
+            font-size: 1.1rem;
+            color: #3366FF;
+        }
+
+        #quiz-section .answer-btn {
+            transition: all 0.2s;
+        }
+        #quiz-section .answer-btn.correct {
+            background-color: #28a745 !important;
+            color: white;
+            border-color: #28a745;
+        }
+        #quiz-section .answer-btn.incorrect {
+            background-color: #dc3545 !important;
+            color: white;
+            border-color: #dc3545;
+        }
+        #quiz-section .answer-btn:disabled {
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+
+    </style>
+</head>
+<body class="bg-[#F2F2F2] text-[#333333]">
+
+    <div id="content-to-print" class="container mx-auto p-4 md:p-8 max-w-5xl">
+
+        <header class="text-center mb-12">
+            <div class="flex justify-center items-center mb-4 relative">
+                 <h1 class="text-4xl md:text-5xl font-bold text-[#3366FF] mb-2">関係詞 まるわかりガイド <span class="text-3xl md:text-4xl align-middle">Ver.2.0</span></h1>
+                 <button id="download-pdf-btn" class="absolute right-0 top-0 bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-lg flex items-center transition-colors">
+                    <i class="fa-solid fa-file-pdf mr-2"></i>
+                    <span id="pdf-btn-text">PDF</span>
+                </button>
+            </div>
+            <p class="text-lg text-gray-600">複雑な英文もスッキリ！文をつなぐ便利なルールをマスターしよう。</p>
+        </header>
+
+        <section class="mb-12">
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <h2 class="text-2xl font-bold text-[#33CC99] mb-4 text-center">関係代名詞の基本マトリクス</h2>
+                <p class="text-center text-gray-600 mb-6">関係代名詞は、説明したい名詞（先行詞）が「人」か「人以外」か、そして文中での役割（格）によって使い分けます。</p>
+                <div class="grid grid-cols-4 text-center border-2 border-[#3366FF] rounded-lg overflow-hidden main-grid">
+                    <div class="font-bold p-3 bg-[#3366FF] text-white">先行詞</div>
+                    <div class="font-bold p-3 bg-[#3366FF] text-white">主格 (〜は/が)</div>
+                    <div class="font-bold p-3 bg-[#3366FF] text-white">所有格 (〜の)</div>
+                    <div class="font-bold p-3 bg-[#3366FF] text-white">目的格 (〜を/に)</div>
+
+                    <div class="font-bold p-4 bg-blue-50 flex items-center justify-center">👤 人</div>
+                    <div class="p-4 bg-white flex items-center justify-center font-times text-lg font-semibold">who / that</div>
+                    <div class="p-4 bg-white flex items-center justify-center font-times text-lg font-semibold">whose</div>
+                    <div class="p-4 bg-white flex items-center justify-center font-times text-lg font-semibold text-gray-500">(whom/who/that)</div>
+
+                    <div class="font-bold p-4 bg-blue-50 flex items-center justify-center">⚙️ 人以外</div>
+                    <div class="p-4 bg-white flex items-center justify-center font-times text-lg font-semibold">which / that</div>
+                    <div class="p-4 bg-white flex items-center justify-center font-times text-lg font-semibold">whose / of which</div>
+                    <div class="p-4 bg-white flex items-center justify-center font-times text-lg font-semibold text-gray-500">(which / that)</div>
+                </div>
+                 <p class="text-sm text-center text-gray-500 mt-4">目的格は、特に会話では省略されることが多いため ( ) で示しています。</p>
+            </div>
+        </section>
+
+        <section class="mb-12">
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <h2 class="text-2xl font-bold text-[#FF3366] mb-6 text-center">どれを選ぶ？選択フローチャート</h2>
+                <div class="max-w-xs mx-auto text-center">
+                    <div class="flowchart-node bg-white p-4 rounded-lg">
+                        <span class="text-sm text-gray-500">STEP 1</span>
+                        <p class="font-bold">説明したい名詞は？</p>
+                    </div>
+                    <div class="flowchart-arrow bg-[#3366FF]"></div>
+                    <div class="flex justify-around">
+                        <p class="font-bold text-[#FF3366]">👤 人</p>
+                        <p class="font-bold text-[#3366FF]">⚙️ 人以外</p>
+                    </div>
+                    <div class="flowchart-arrow bg-[#3366FF]"></div>
+                     <div class="flowchart-node bg-white p-4 rounded-lg">
+                        <span class="text-sm text-gray-500">STEP 2</span>
+                        <p class="font-bold">文の中での役割は？</p>
+                    </div>
+                     <div class="flowchart-arrow bg-[#3366FF]"></div>
+                     <div class="grid grid-cols-3 gap-2 text-sm">
+                        <p>「〜は/が」<br><strong>(主格)</strong></p>
+                        <p>「〜の」<br><strong>(所有格)</strong></p>
+                        <p>「〜を/に」<br><strong>(目的格)</strong></p>
+                    </div>
+                    <div class="flowchart-arrow bg-[#3366FF]"></div>
+                    <div class="flowchart-node bg-[#FFC700] p-4 rounded-lg">
+                        <span class="text-sm text-gray-700">STEP 3</span>
+                        <p class="font-bold text-[#333333]">マトリクスで確認！</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+
+        <section class="mb-12">
+            <h2 class="text-3xl font-bold text-center mb-8">例文でマスターしよう</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+
+                <div class="bg-white rounded-lg shadow-md p-6">
+                    <h3 class="text-xl font-bold mb-4 text-[#FF3366]">先行詞が「人」の場合</h3>
+                    <div class="space-y-4">
+                        <div class="example-container">
+                            <p class="font-bold">主格 (〜は/が)</p>
+                            <p class="text-lg font-times sentence">I have <span class="highlight-person">a friend</span> <span class="highlight-pronoun">who</span> lives in Yamagata.</p>
+                            <div class="audio-controls"></div>
+                            <p class="text-sm text-gray-600">→ 山形に住んでいる友達がいます。</p>
+                        </div>
+                        <div class="example-container">
+                            <p class="font-bold">所有格 (〜の)</p>
+                            <p class="text-lg font-times sentence">I have <span class="highlight-person">a friend</span> <span class="highlight-pronoun">whose</span> father is a programmer.</p>
+                            <div class="audio-controls"></div>
+                            <p class="text-sm text-gray-600">→ お父さんがプログラマーの友達がいます。</p>
+                        </div>
+                        <div class="example-container">
+                            <p class="font-bold">目的格 (〜を/に)</p>
+                            <p class="text-lg font-times sentence">The <span class="highlight-person">person</span> <span class="highlight-pronoun">(whom)</span> I respect is my teacher.</p>
+                            <div class="audio-controls"></div>
+                            <p class="text-sm text-gray-600">→ 私が尊敬する人は私の先生です。</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-lg shadow-md p-6">
+                    <h3 class="text-xl font-bold mb-4 text-[#3366FF]">先行詞が「人以外」の場合</h3>
+                     <div class="space-y-4">
+                        <div class="example-container">
+                            <p class="font-bold">主格 (〜は/が)</p>
+                            <p class="text-lg font-times sentence">This is <span class="highlight-thing">the AI</span> <span class="highlight-pronoun">which</span> can create images.</p>
+                            <div class="audio-controls"></div>
+                            <p class="text-sm text-gray-600">→ これは画像を生成できるAIです。</p>
+                        </div>
+                        <div class="example-container">
+                            <p class="font-bold">所有格 (〜の)</p>
+                            <p class="text-lg font-times sentence">I'm looking for <span class="highlight-thing">a house</span> <span class="highlight-pronoun">whose</span> roof is blue.</p>
+                            <div class="audio-controls"></div>
+                            <p class="text-sm text-gray-600">→ 私は屋根が青い家を探しています。</p>
+                        </div>
+                        <div class="example-container">
+                            <p class="font-bold">目的格 (〜を/に)</p>
+                            <p class="text-lg font-times sentence">The <span class="highlight-thing">investment</span> <span class="highlight-pronoun">(that)</span> he made was successful.</p>
+                            <div class="audio-controls"></div>
+                            <p class="text-sm text-gray-600">→ 彼が行った投資は成功しました。</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="mb-12">
+             <h2 class="text-3xl font-bold text-center mb-8">知っておきたい特別ルール</h2>
+             <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div class="bg-white rounded-lg shadow-md p-6 md:col-span-2">
+                    <h3 class="text-2xl font-bold text-[#FFC700] mb-4 text-center">万能選手 `that` の注意点</h3>
+                    <p class="text-center mb-6">`that` は「人」にも「人以外」にも使える便利な関係代名詞ですが、使えない場面があります。</p>
+                    <div class="flex flex-col md:flex-row justify-around text-center">
+                        <div class="mb-4 md:mb-0">
+                            <p class="text-5xl mb-2">,</p>
+                            <p class="font-bold text-red-500">後述の非限定用法では使えない</p>
+                            <p class="text-lg text-gray-600 font-times mt-2">I visited Yamagata, <span class="line-through">that</span> is beautiful. <span class="text-red-500 font-bold">✕</span></p>
+                            <div class="example-container">
+                                <p class="text-lg text-gray-600 font-times mt-2 sentence">I visited Yamagata, <span class="text-green-600 font-bold">which</span> is beautiful. <span class="text-green-600 font-bold">〇</span></p>
+                                <div class="audio-controls justify-center"></div>
+                            </div>
+                        </div>
+                        <div>
+                            <p class="text-5xl mb-2">➡️</p>
+                            <p class="font-bold text-red-500">前置詞の直後では使えない</p>
+                             <p class="text-lg text-gray-600 font-times mt-2">This is the house in <span class="line-through">that</span> I lived. <span class="text-red-500 font-bold">✕</span></p>
+                            <div class="example-container">
+                                <p class="text-lg text-gray-600 font-times mt-2 sentence">This is the house in <span class="text-green-600 font-bold">which</span> I lived. <span class="text-green-600 font-bold">〇</span></p>
+                                <div class="audio-controls justify-center"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-lg shadow-md p-6 md:col-span-2">
+                    <h3 class="text-2xl font-bold text-[#33CC99] mb-4 text-center">先行詞を含む `what`</h3>
+                    <p class="text-center">`what` は `the thing(s) which` と同じ意味で、それ自体に先行詞を含んでいます。「〜なこと」「〜なもの」と訳します。</p>
+                    <div class="mt-4 bg-gray-100 p-4 rounded-lg">
+                        <div class="example-container">
+                            <p class="text-xl text-center font-times sentence"><span class="highlight-pronoun">What</span> is important is to keep learning.</p>
+                            <div class="audio-controls justify-center"></div>
+                            <p class="text-center mt-2">（重要なのは、学び続けることです。）</p>
+                        </div>
+                    </div>
+                </div>
+             </div>
+        </section>
+
+        <section class="mb-12">
+            <h2 class="text-3xl font-bold text-center mb-8">ステップアップ：関係副詞を理解しよう</h2>
+            <div class="space-y-8">
+                <div class="bg-white rounded-lg shadow-md p-6">
+                    <h3 class="text-2xl font-bold text-[#FF3366] mb-4 text-center">関係副詞とは？</h3>
+                    <p class="text-center text-gray-600 mb-6">関係副詞は、先行詞を「時・場所・理由・方法」といった状況で詳しく説明する時に使います。</p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-center">
+                        <div class="bg-red-50 p-4 rounded-lg example-container">
+                            <p class="font-bold text-lg">where (場所)</p>
+                            <p class="font-times sentence">This is <span class="highlight-thing">the city</span> <span class="highlight-adverb">where</span> I was born.</p>
+                             <div class="audio-controls justify-center"></div>
+                            <p>（ここは私が生まれた街です。）</p>
+                        </div>
+                         <div class="bg-blue-50 p-4 rounded-lg example-container">
+                            <p class="font-bold text-lg">when (時)</p>
+                            <p class="font-times sentence">I remember <span class="highlight-thing">the day</span> <span class="highlight-adverb">when</span> we first met.</p>
+                             <div class="audio-controls justify-center"></div>
+                            <p>（私たちが初めて会った日を覚えています。）</p>
+                        </div>
+                         <div class="bg-yellow-50 p-4 rounded-lg example-container">
+                            <p class="font-bold text-lg">why (理由)</p>
+                            <p class="font-times sentence">Tell me <span class="highlight-thing">the reason</span> <span class="highlight-adverb">why</span> you were late.</p>
+                             <div class="audio-controls justify-center"></div>
+                            <p>（遅刻した理由を教えてください。）</p>
+                        </div>
+                         <div class="bg-green-50 p-4 rounded-lg example-container">
+                            <p class="font-bold text-lg">how (方法)</p>
+                            <p class="font-times sentence">This is <span class="highlight-adverb">how</span> he solved the problem.</p>
+                             <div class="audio-controls justify-center"></div>
+                            <p>（これが彼がその問題を解決した方法です。）<br><span class="text-sm">※howは a way how とは言わないのが普通です。</span></p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-lg shadow-md p-6">
+                    <h3 class="text-2xl font-bold text-[#3366FF] mb-4 text-center">【ここが重要】関係代名詞と関係副詞の違い</h3>
+                    <p class="text-center text-gray-600 mb-6">見分けるカギは「後ろに続く文」と「書き換え」にあります！</p>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
+                        <div class="border-2 border-green-400 rounded-lg p-4">
+                            <h4 class="text-xl font-bold text-center text-green-600 mb-2">関係代名詞 (who, which)</h4>
+                            <p>後ろの文で「主語」や「目的語」の代わりをします。<br>→ そのため、後ろは<strong class="text-red-500">不完全な文</strong>（主語や目的語が欠けている）になります。</p>
+                            <div class="mt-4 bg-gray-100 p-3 rounded example-container">
+                                <p class="font-bold">例文：</p>
+                                <p class="font-times sentence">This is <span class="highlight-thing">the house</span> <span class="highlight-pronoun">which</span> he built.</p>
+                                <div class="audio-controls"></div>
+                                <p class="text-gray-600 text-sm">（これは彼が建てた家です。）<br>→ built の目的語(何を？)が欠けている。</p>
+                            </div>
+                        </div>
+
+                        <div class="border-2 border-yellow-400 rounded-lg p-4">
+                             <h4 class="text-xl font-bold text-center text-yellow-600 mb-2">関係副詞 (where, when)</h4>
+                             <p>後ろの文で「場所」や「時」などを補足する副詞の役割をします。<br>→ そのため、後ろは<strong class="text-blue-500">完全な文</strong>（S+V...が揃っている）になります。</p>
+                              <div class="mt-4 bg-gray-100 p-3 rounded example-container">
+                                <p class="font-bold">例文：</p>
+                                <p class="font-times sentence">This is <span class="highlight-thing">the house</span> <span class="highlight-adverb">where</span> he lives.</p>
+                                <div class="audio-controls"></div>
+                                <p class="text-gray-600 text-sm">（これは彼が住んでいる家です。）<br>→ he lives だけで文として成立。</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="text-center my-6">
+                        <p class="text-4xl">🔄</p>
+                        <p class="font-bold text-lg mt-2">関係副詞は「前置詞＋関係代名詞」に書き換えられる！</p>
+                    </div>
+
+                    <div class="bg-gray-100 p-4 rounded-lg example-container">
+                         <p class="text-lg font-times text-center sentence">This is <span class="highlight-thing">the house</span> <span class="highlight-pronoun">in which</span> he lives.</p>
+                         <div class="audio-controls justify-center"></div>
+                         <p class="text-center text-gray-600 mt-2">（`where` = 場所の `in` + `which`）</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="mb-12">
+            <h2 class="text-3xl font-bold text-center mb-8">さらにレベルアップ：発展的な使い方</h2>
+            <div class="space-y-8">
+                <div class="bg-white rounded-lg shadow-md p-6">
+                    <h3 class="text-2xl font-bold text-[#FF6600] mb-4 text-center">限定用法と非限定用法</h3>
+                    <p class="text-center text-gray-600 mb-6">コンマ(,)の有無で、文の意味合いが変わる重要なルールです。</p>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
+                        <div class="border-2 border-purple-400 rounded-lg p-4">
+                            <h4 class="text-xl font-bold text-center text-purple-600 mb-2">限定用法 (コンマなし)</h4>
+                            <p>後ろから先行詞を修飾し、<strong class="text-purple-600">「どの〜か」を特定</strong>します。たくさんある中の1つを指し示すイメージです。</p>
+                            <div class="mt-4 bg-gray-100 p-3 rounded example-container">
+                                <p class="font-bold">例文：</p>
+                                <p class="font-times sentence">He has a son <span class="highlight-pronoun">who</span> became a doctor.</p>
+                                <div class="audio-controls"></div>
+                                <p class="text-gray-600 text-sm">（彼には医者になった息子がいます。）<br>→ 他にも息子がいる可能性を示唆。</p>
+                            </div>
+                        </div>
+
+                        <div class="border-2 border-indigo-400 rounded-lg p-4">
+                             <h4 class="text-xl font-bold text-center text-indigo-600 mb-2">非限定用法 (コンマあり)</h4>
+                             <p>先行詞についての<strong class="text-indigo-600">補足情報</strong>を付け加えます。「ちなみに〜」というニュアンスです。</p>
+                              <div class="mt-4 bg-gray-100 p-3 rounded example-container">
+                                <p class="font-bold">例文：</p>
+                                <p class="font-times sentence">He has a son, <span class="highlight-pronoun">who</span> became a doctor.</p>
+                                <div class="audio-controls"></div>
+                                <p class="text-gray-600 text-sm">（彼には息子が一人いて、その人は医者になった。）<br>→ 息子は一人だけ、という含み。</p>
+                            </div>
+                            <div class="mt-4 bg-gray-100 p-3 rounded example-container">
+                                <p class="font-bold">前置詞と使う場合：</p>
+                                <p class="font-times sentence">I often go back to Yamagata, in <span class="highlight-pronoun">which</span> I spent my childhood.</p>
+                                <div class="audio-controls"></div>
+                                <p class="text-gray-600 text-sm">（私はよく山形に帰りますが、そこで子供時代を過ごしました。）</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-8 border-t-2 pt-6">
+                         <h4 class="text-xl font-bold text-center text-teal-600 mb-4">特別ルール：前文全体を先行詞にする `which`</h4>
+                         <p class="text-center text-gray-600 mb-4">非限定用法(コンマあり)の`which`は、直前の名詞だけでなく、<strong class="text-teal-600">前の文全体の内容を指して</strong>「そしてそのことは〜」と続けることができます。</p>
+                         <div class="bg-teal-50 p-4 rounded-lg example-container">
+                             <p class="font-times text-center sentence">He passed the exam, <span class="highlight-pronoun">which</span> made his parents happy.</p>
+                             <div class="audio-controls justify-center"></div>
+                             <p class="text-center text-gray-600 mt-2">（彼は試験に合格し、<strong class="text-teal-600">そのこと</strong>が両親を喜ばせた。）</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-lg shadow-md p-6">
+                    <h3 class="text-2xl font-bold text-[#9933FF] mb-4 text-center">複合関係代名詞</h3>
+                    <p class="text-center text-gray-600 mb-6">先行詞を自分の中に含んでいて、「〜なものは何でも/誰でも」といった意味を表します。</p>
+                    <div class="space-y-4">
+                        <div class="bg-purple-50 p-4 rounded-lg example-container">
+                            <p class="font-bold text-lg">whatever (〜するものは何でも)</p>
+                            <p class="font-times sentence">You can do <span class="highlight-pronoun">whatever</span> you want.</p>
+                             <div class="audio-controls"></div>
+                            <p>（あなたはしたいことは何でもしていいですよ。）</p>
+                        </div>
+                         <div class="bg-pink-50 p-4 rounded-lg example-container">
+                            <p class="font-bold text-lg">whoever (〜する人は誰でも)</p>
+                            <p class="font-times sentence"><span class="highlight-pronoun">Whoever</span> comes first will get the ticket.</p>
+                             <div class="audio-controls"></div>
+                            <p>（最初に来た人は誰でもチケットがもらえます。）</p>
+                        </div>
+                         <div class="bg-orange-50 p-4 rounded-lg example-container">
+                            <p class="font-bold text-lg">whichever (〜するものはどちらでも)</p>
+                            <p class="font-times sentence">Choose <span class="highlight-pronoun">whichever</span> you like.</p>
+                             <div class="audio-controls"></div>
+                            <p>（どちらでも好きな方を選んでください。）</p>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <section id="quiz-section" class="mb-12">
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <h2 class="text-3xl font-bold text-center mb-8 text-blue-800">実力チェック！ランダムテスト</h2>
+                <div id="quiz-container" class="max-w-2xl mx-auto">
+                    <div id="quiz-start-screen">
+                        <p class="text-center text-lg mb-6">学習した内容が理解できたか、10問のランダムテストで腕試ししてみましょう！</p>
+                        <button id="start-quiz-btn" class="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-4 rounded-lg text-xl transition-colors">テスト開始</button>
+                    </div>
+
+                    <div id="quiz-main-screen" class="hidden">
+                        <div class="mb-4">
+                            <p id="quiz-progress" class="text-right text-gray-500"></p>
+                            <p id="quiz-question" class="text-xl font-semibold mb-4 text-center py-4"></p>
+                        </div>
+                        <div id="quiz-answers" class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4"></div>
+                        <div class="flex justify-end mt-6">
+                            <button id="next-question-btn" class="bg-gray-400 hover:bg-gray-500 text-white font-bold py-2 px-6 rounded-lg transition-colors hidden">次へ</button>
+                        </div>
+                    </div>
+                    
+                    <div id="quiz-result-screen" class="hidden text-center">
+                         <h3 class="text-2xl font-bold mb-4">テスト結果</h3>
+                         <p id="quiz-score" class="text-4xl font-bold mb-6 text-blue-600"></p>
+                         <p id="quiz-feedback" class="text-lg mb-6"></p>
+                         <button id="restart-quiz-btn" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-6 rounded-lg text-xl transition-colors">もう一度挑戦</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </div>
+
+    <footer class="text-center p-4 mt-8">
+        <p class="text-sm text-gray-500 font-times">A Visual Guide to Relative Pronouns & Adverbs</p>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            if (!SpeechRecognition) {
+                console.error("お使いのブラウザは音声認識をサポートしていません。");
+            }
+            if (!window.speechSynthesis) {
+                 console.error("お使いのブラウザは音声合成をサポートしていません。");
+            }
+
+            // --- Audio Controls ---
+            const exampleContainers = document.querySelectorAll('.example-container');
+            exampleContainers.forEach((container) => {
+                const sentenceEl = container.querySelector('.sentence');
+                const controlsEl = container.querySelector('.audio-controls');
+                if (!sentenceEl || !controlsEl) return;
+
+                const sentenceText = sentenceEl.innerText.replace(/\s*[〇✕]$/, '').trim();
+                let mediaRecorder;
+                let audioChunks = [];
+                let audioBlobUrl = null;
+
+                const listenBtn = document.createElement('button');
+                listenBtn.innerHTML = '<i class="fa-solid fa-volume-high"></i>';
+                listenBtn.className = 'audio-btn listen-btn';
+                listenBtn.title = '音声を聞く';
+
+                const recordBtn = document.createElement('button');
+                recordBtn.innerHTML = '<i class="fa-solid fa-microphone"></i>';
+                recordBtn.className = 'audio-btn record-btn';
+                recordBtn.title = '録音開始';
+                
+                const stopBtn = document.createElement('button');
+                stopBtn.innerHTML = '<i class="fa-solid fa-stop"></i>';
+                stopBtn.className = 'audio-btn stop-btn';
+                stopBtn.title = '録音停止';
+                stopBtn.disabled = true;
+
+                const playbackBtn = document.createElement('button');
+                playbackBtn.innerHTML = '<i class="fa-solid fa-play"></i>';
+                playbackBtn.className = 'audio-btn playback-btn';
+                playbackBtn.title = '録音を再生';
+                playbackBtn.disabled = true;
+
+                const scoreDisplay = document.createElement('div');
+                scoreDisplay.className = 'score-display';
+
+                controlsEl.append(listenBtn, recordBtn, stopBtn, playbackBtn, scoreDisplay);
+
+                listenBtn.addEventListener('click', () => {
+                    const utterance = new SpeechSynthesisUtterance(sentenceText);
+                    utterance.lang = 'en-US';
+                    utterance.rate = 0.9;
+                    window.speechSynthesis.speak(utterance);
+                });
+
+                recordBtn.addEventListener('click', async () => {
+                    try {
+                        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                        mediaRecorder = new MediaRecorder(stream);
+                        audioChunks = [];
+
+                        mediaRecorder.addEventListener('dataavailable', event => {
+                            audioChunks.push(event.data);
+                        });
+
+                        mediaRecorder.addEventListener('stop', () => {
+                            const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
+                            if (audioBlobUrl) {
+                                URL.revokeObjectURL(audioBlobUrl);
+                            }
+                            audioBlobUrl = URL.createObjectURL(audioBlob);
+                            playbackBtn.disabled = false;
+                            evaluatePronunciation(audioBlob, sentenceText, scoreDisplay);
+                            stream.getTracks().forEach(track => track.stop());
+                        });
+                        
+                        mediaRecorder.start();
+                        recordBtn.classList.add('recording');
+                        recordBtn.disabled = true;
+                        stopBtn.disabled = false;
+                        playbackBtn.disabled = true;
+                        scoreDisplay.textContent = '録音中...';
+
+                    } catch (err) {
+                        console.error("マイクへのアクセスに失敗しました:", err);
+                        scoreDisplay.textContent = 'マイクエラー';
+                    }
+                });
+
+                stopBtn.addEventListener('click', () => {
+                    if(mediaRecorder && mediaRecorder.state === 'recording') {
+                        mediaRecorder.stop();
+                    }
+                    recordBtn.classList.remove('recording');
+                    recordBtn.disabled = false;
+                    stopBtn.disabled = true;
+                    scoreDisplay.textContent = '評価中...';
+                });
+
+                playbackBtn.addEventListener('click', () => {
+                    if (audioBlobUrl) {
+                        const audio = new Audio(audioBlobUrl);
+                        audio.play();
+                    }
+                });
+            });
+
+            function evaluatePronunciation(audioBlob, originalText, scoreEl) {
+                if (!SpeechRecognition) {
+                    scoreEl.textContent = '非対応ブラウザ';
+                    return;
+                }
+                const recognition = new SpeechRecognition();
+                recognition.lang = 'en-US';
+                recognition.interimResults = false;
+                
+                recognition.onresult = (event) => {
+                    const recognizedText = event.results[0][0].transcript;
+                    const cleanOriginal = originalText.toLowerCase().replace(/[.,?\/#!$%\^&\*;:{}=\-_`~()]/g,"").replace(/\s{2,}/g," ");
+                    const cleanRecognized = recognizedText.toLowerCase();
+
+                    const originalWords = cleanOriginal.split(' ').filter(Boolean);
+                    const recognizedWords = cleanRecognized.split(' ').filter(Boolean);
+                    
+                    let matchCount = 0;
+                    originalWords.forEach(word => {
+                        if (recognizedWords.includes(word)) {
+                            matchCount++;
+                        }
+                    });
+
+                    const similarity = originalWords.length > 0 ? matchCount / originalWords.length : 0;
+                    
+                    let score = 0;
+                    let message = '';
+                    if (similarity >= 0.8) {
+                        score = Math.floor(Math.random() * 5) + 95;
+                        message = '素晴らしい！';
+                    } else if (similarity >= 0.6) {
+                        score = Math.floor(Math.random() * 10) + 85;
+                        message = 'すごい！';
+                    } else if (similarity >= 0.4) {
+                        score = Math.floor(Math.random() * 10) + 75;
+                        message = '良い調子！';
+                    } else {
+                        score = Math.floor(Math.random() * 15) + 60;
+                        message = 'もう一度！';
+                    }
+                    scoreEl.innerHTML = `${score}点 <span class="text-sm text-gray-500">${message}</span>`;
+                };
+
+                recognition.onerror = (event) => {
+                    console.error('音声認識エラー:', event.error);
+                    scoreEl.textContent = '評価エラー';
+                };
+                
+                recognition.start();
+            }
+
+            // --- PDF Download ---
+            const { jsPDF } = window.jspdf;
+            const downloadBtn = document.getElementById('download-pdf-btn');
+            const pdfBtnText = document.getElementById('pdf-btn-text');
+
+            downloadBtn.addEventListener('click', () => {
+                pdfBtnText.textContent = '作成中...';
+                downloadBtn.disabled = true;
+                const content = document.getElementById('content-to-print');
+                
+                html2canvas(content, { scale: 2, windowWidth: 1200 }).then(canvas => {
+                    const imgData = canvas.toDataURL('image/png');
+                    const pdf = new jsPDF({
+                        orientation: 'p',
+                        unit: 'px',
+                        format: [canvas.width, canvas.height]
+                    });
+                    pdf.addImage(imgData, 'PNG', 0, 0, canvas.width, canvas.height);
+                    pdf.save('関係詞まるわかりガイド.pdf');
+                    pdfBtnText.textContent = 'PDF';
+                    downloadBtn.disabled = false;
+                }).catch(err => {
+                    console.error("PDFの生成に失敗しました:", err);
+                    pdfBtnText.textContent = 'エラー';
+                    downloadBtn.disabled = false;
+                });
+            });
+
+            // --- Quiz Logic ---
+            const quizData = [
+                { question: "This is the book ( ) I bought yesterday. 先行詞が「人以外」の目的格", options: ["who", "which", "whose", "where"], answer: 1 },
+                { question: "I know the girl ( ) is playing the piano. 先行詞が「人」の主格", options: ["which", "whose", "who", "whom"], answer: 2 },
+                { question: "That is the park ( ) we often play soccer.「場所」を説明する関係詞", options: ["which", "when", "where", "who"], answer: 2 },
+                { question: "Please tell me ( ) is important.「〜なこと」という意味", options: ["what", "which", "that", "how"], answer: 0 },
+                { question: "He has two sons ( ) are studying abroad.「医者になった息子が2人いる」という意味になるのは？", options: ["sons who", "sons, who"], answer: 0 },
+                { question: "He has two sons, ( ) are studying abroad.「息子は2人で、2人とも留学中」という意味になるのは？", options: ["sons who", "sons, who"], answer: 1 },
+                { question: "This is the house in ( ) he was born.", options: ["that", "where", "which", "who"], answer: 2 },
+                { question: "I will do ( ) I can for you.「あなたのためにできることは何でもします」", options: ["whoever", "whatever", "whichever", "that"], answer: 1 },
+                { question: "The man ( ) car was stolen called the police. 先行詞が「人」の所有格", options: ["who", "which", "whom", "whose"], answer: 3 },
+                { question: "I will never forget the day ( ) I met her for the first time. 「時」を説明する関係詞", options: ["when", "where", "which", "what"], answer: 0 },
+                { question: "The reason ( ) he was absent is still unknown. 「理由」を説明する関係詞", options: ["which", "why", "when", "where"], answer: 1 },
+                { question: "He told me a funny story, ( ) made everyone laugh. 「前の文全体」を先行詞とする", options: ["that", "what", "which", "who"], answer: 2 },
+            ];
+            
+            const startScreen = document.getElementById('quiz-start-screen');
+            const mainScreen = document.getElementById('quiz-main-screen');
+            const resultScreen = document.getElementById('quiz-result-screen');
+            
+            const startBtn = document.getElementById('start-quiz-btn');
+            const restartBtn = document.getElementById('restart-quiz-btn');
+            const nextBtn = document.getElementById('next-question-btn');
+
+            const questionEl = document.getElementById('quiz-question');
+            const answersEl = document.getElementById('quiz-answers');
+            const progressEl = document.getElementById('quiz-progress');
+            const scoreEl = document.getElementById('quiz-score');
+            const feedbackEl = document.getElementById('quiz-feedback');
+
+            let shuffledQuestions, currentQuestionIndex, score;
+
+            startBtn.addEventListener('click', startQuiz);
+            restartBtn.addEventListener('click', startQuiz);
+            nextBtn.addEventListener('click', () => {
+                currentQuestionIndex++;
+                setNextQuestion();
+            });
+
+            function startQuiz() {
+                shuffledQuestions = quizData.sort(() => Math.random() - 0.5).slice(0, 10);
+                currentQuestionIndex = 0;
+                score = 0;
+                startScreen.classList.add('hidden');
+                resultScreen.classList.add('hidden');
+                mainScreen.classList.remove('hidden');
+                setNextQuestion();
+            }
+
+            function setNextQuestion() {
+                resetState();
+                if (currentQuestionIndex < shuffledQuestions.length) {
+                    showQuestion(shuffledQuestions[currentQuestionIndex]);
+                } else {
+                    showResults();
+                }
+            }
+            
+            function showQuestion(question) {
+                progressEl.textContent = `問題 ${currentQuestionIndex + 1} / ${shuffledQuestions.length}`;
+                questionEl.textContent = question.question;
+                question.options.forEach((option, index) => {
+                    const button = document.createElement('button');
+                    button.innerText = option;
+                    button.classList.add('answer-btn', 'font-times', 'w-full', 'p-3', 'rounded-lg', 'border-2', 'hover:bg-gray-200');
+                    if (index === question.answer) {
+                        button.dataset.correct = true;
+                    }
+                    button.addEventListener('click', selectAnswer);
+                    answersEl.appendChild(button);
+                });
+            }
+
+            function resetState() {
+                nextBtn.classList.add('hidden');
+                while (answersEl.firstChild) {
+                    answersEl.removeChild(answersEl.firstChild);
+                }
+            }
+
+            function selectAnswer(e) {
+                const selectedBtn = e.target;
+                const correct = selectedBtn.dataset.correct === 'true';
+                if (correct) {
+                    score++;
+                }
+                setStatusClass(selectedBtn, correct);
+                Array.from(answersEl.children).forEach(button => {
+                    if (button.dataset.correct === 'true') {
+                        setStatusClass(button, true);
+                    }
+                    button.disabled = true;
+                });
+                nextBtn.classList.remove('hidden');
+            }
+
+            function setStatusClass(element, correct) {
+                element.classList.remove('hover:bg-gray-200');
+                if (correct) {
+                    element.classList.add('correct');
+                } else {
+                    element.classList.add('incorrect');
+                }
+            }
+
+            function showResults() {
+                mainScreen.classList.add('hidden');
+                resultScreen.classList.remove('hidden');
+                const finalScore = (score / shuffledQuestions.length) * 100;
+                scoreEl.textContent = `${score} / ${shuffledQuestions.length} (${finalScore}%)`;
+                let feedbackText = '';
+                if(finalScore === 100) feedbackText = "完璧です！素晴らしい理解度です！";
+                else if(finalScore >= 80) feedbackText = "素晴らしい！ほとんどの問題を正解しました。";
+                else if(finalScore >= 60) feedbackText = "良い調子です！あと少しでマスターです。";
+                else feedbackText = "よく頑張りました！もう一度復習して再挑戦しましょう。";
+                feedbackEl.textContent = feedbackText;
+            }
+        });
+    </script>
+</body>
+</html>
